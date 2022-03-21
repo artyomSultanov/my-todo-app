@@ -8,7 +8,8 @@ export interface INavLink {
 }
 export interface INavList {
   navList: INavLink[];
-  deleteList(delList: INavLink): void
+  deleteList(id: string): void;
+  switchOnList(switchedList: INavLink): void;
 }
 export interface IButtonToAddList {
   addNewList(newList: INavLink): void;

@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from "react";
-import Lists from "./Lists";
-import AddForm from "./AddForm";
+import React, { useState, useEffect, useContext } from "react";
+import { NavigationContext } from "../../context";
+import NavLists from "./NavLists";
+import NavForm from "./NavForm";
+import { INavLink } from "./Interfaces";
+import "./Nav.sass";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
@@ -9,19 +12,16 @@ import {
   faCalendar,
   faHouse,
 } from "@fortawesome/free-solid-svg-icons";
-import { INavLink } from "./Interfaces";
-import "./Nav.sass";
-
 const defaultNavbarList = [
-  { value: "Мой день", id: "мой-день", switched: "switchedOn", icon: faSun },
-  { value: "Важно", id: "важно", switched: "", icon: faStar },
+  { value: "Мой день", id: "my-day", switched: "switchedOn", icon: faSun },
+  { value: "Важно", id: "important", switched: "", icon: faStar },
   {
     value: "Запланировано",
-    id: "запланировано",
+    id: "planned",
     switched: "",
     icon: faCalendar,
   },
-  { value: "Задачи", id: "задачи", switched: "", icon: faHouse },
+  { value: "Задачи", id: "tasks", switched: "", icon: faHouse },
 ];
 
 const Nav: React.FC = () => {
@@ -38,10 +38,10 @@ const Nav: React.FC = () => {
     localStorage.setItem("navList", JSON.stringify(navList));
   }, [navList]);
 
-  const setNavListHandler = (newList: INavLink) => {
+  // handleSetNavList - добавляет список
+  const handleSetNavList = (newList: INavLink) => {
     for (let i = 0; i < navList.length; i++) {
       if (navList[i].id === newList.id) {
-        console.log("SAME");
         return;
       }
     }
@@ -50,7 +50,7 @@ const Nav: React.FC = () => {
   };
 
   const [navState, setNavState] = useState("navbar-opened");
-  const clickHandle: React.MouseEventHandler<SVGSVGElement> = (
+  const handleClick: React.MouseEventHandler<SVGSVGElement> = (
     event: React.MouseEvent<SVGSVGElement>
   ) => {
     console.log("setNavState");
@@ -59,25 +59,53 @@ const Nav: React.FC = () => {
     );
   };
 
+  // handleDeleteList - удаляет список
+  const handleDeleteList = (id: string) => {
+    let isSwitchedOn = false;
+    const newList = navList.filter((elem: INavLink) => {
+      if (elem.id === id && elem.switched !== "") isSwitchedOn = true;
+      return elem.id !== id;
+    });
+    // после удаления списка в Main отображается первый список
+    if (isSwitchedOn) handleActiveList(newList[0]);
+    setNavList(() => {
+      if (isSwitchedOn) {
+        return newList.map((elem: INavLink, index: number) =>
+          index === 0 ? { ...elem, switched: "switchedOn" } : elem
+        );
+      } else return newList
+    });
+  };
+
+  // handleSwitchOnList - фокусируется на списке
+  const handleActiveList = useContext(NavigationContext);
+  const handleSwitchOnList = (switchedList: INavLink) => {
+    const newList = navList.map((elem: INavLink) => {
+      if (elem.id === switchedList.id)
+        return { ...elem, switched: "switchedOn" };
+      if (elem.id !== switchedList.id) return { ...elem, switched: "" };
+      return elem;
+    });
+    handleActiveList(switchedList);
+    setNavList(() => newList);
+  };
+
   const classes = [navState];
   return (
     <nav>
+      {/* Иконка по скрытию списка */}
       <FontAwesomeIcon
-        className={"burger-menu"}
-        onClick={clickHandle}
+        className={"burger-menu__icon"}
+        onClick={handleClick}
         icon={faBars}
       />
       <div className={classes.join(" ")}>
-        <Lists
+        <NavLists
           navList={navList}
-          deleteList={(delList: INavLink) => {
-            console.log("deleteList");
-            return setNavList(
-              navList.filter((el: INavLink) => el.id !== delList.id)
-            );
-          }}
+          deleteList={handleDeleteList}
+          switchOnList={handleSwitchOnList}
         />
-        <AddForm addNewList={setNavListHandler} />
+        <NavForm addNewList={handleSetNavList} />
       </div>
     </nav>
   );

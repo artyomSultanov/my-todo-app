@@ -3,10 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faList, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { IButtonToAddList } from "./Interfaces";
 
-const AddForm: React.FC<IButtonToAddList> = ({ addNewList }) => {
+const NavForm: React.FC<IButtonToAddList> = ({ addNewList }) => {
   const [inputValue, setInputValue] = useState("");
 
-  const submitHandler: React.FormEventHandler<HTMLFormElement> = (
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (
     event: React.FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
@@ -19,14 +19,14 @@ const AddForm: React.FC<IButtonToAddList> = ({ addNewList }) => {
     });
     setInputValue("");
   };
-  const changeHandler: React.ChangeEventHandler<HTMLInputElement> = (
+  const handleChange: React.ChangeEventHandler<HTMLInputElement> = (
     event: ChangeEvent<HTMLInputElement>
   ) => {
     console.log("setInputValue");
     setInputValue(event.target.value);
   };
   return (
-    <form id={"form-add-list"} onSubmit={submitHandler}>
+    <form id={"form-add-list"} onSubmit={handleSubmit}>
       <FontAwesomeIcon icon={faPlus} />
       <input
         name="nameList"
@@ -35,10 +35,10 @@ const AddForm: React.FC<IButtonToAddList> = ({ addNewList }) => {
         autoComplete="off"
         maxLength={14}
         value={inputValue}
-        onChange={changeHandler}
+        onChange={handleChange}
       />
     </form>
   );
 };
 
-export default AddForm;
+export default NavForm;
